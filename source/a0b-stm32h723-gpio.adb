@@ -8,62 +8,55 @@
 
 pragma Ada_2022;
 
---  with A0B.ARMv7M;               use A0B.ARMv7M;
---  with A0B.ARMv7M.CMSIS;         use A0B.ARMv7M.CMSIS;
---  with A0B.ARMv7M.NVIC;
+with Ada.Unchecked_Conversion;
+
+with A0B.ARMv7M.NVIC_Utilities; use A0B.ARMv7M.NVIC_Utilities;
 with A0B.STM32H723.GPIO.Configuration;
---  with A0B.SVD.STM32H723.EXTI;   use A0B.SVD.STM32H723.EXTI;
-with A0B.STM32H723.SVD.GPIO;   use A0B.STM32H723.SVD.GPIO;
---  with A0B.SVD.STM32H723.RCC;    use A0B.SVD.STM32H723.RCC;
---  with A0B.SVD.STM32H723.SYSCFG; use A0B.SVD.STM32H723.SYSCFG;
---  with A0B.Types.GCC_Builtins;   use A0B.Types.GCC_Builtins;
+with A0B.STM32H723.SVD.EXTI;    use A0B.STM32H723.SVD.EXTI;
+with A0B.STM32H723.SVD.GPIO;    use A0B.STM32H723.SVD.GPIO;
+with A0B.STM32H723.SVD.SYSCFG;  use A0B.STM32H723.SVD.SYSCFG;
+with A0B.Types.GCC_Builtins;    use A0B.Types.GCC_Builtins;
 
 package body A0B.STM32H723.GPIO is
 
-   --  type STM32_Pin_Access is access all STM32_Pin'Class;
-   --
-   --  type EXTI_Descriptor is limited record
-   --     IO : STM32_Pin_Access;
-   --     SO : aliased Ada.Synchronous_Task_Control.Suspension_Object;
-   --     CB : A0B.Callbacks.Callback;
-   --  end record;
-   --
-   --  subtype EXTI_Line_Identifier is IO_Line_Identifier;
-   --
-   --  EXTI0_Interrupt     : constant A0B.ARMv7M.External_Interrupt_Number := 6;
-   --  EXTI1_Interrupt     : constant A0B.ARMv7M.External_Interrupt_Number := 7;
-   --  EXTI2_Interrupt     : constant A0B.ARMv7M.External_Interrupt_Number := 8;
-   --  EXTI3_Interrupt     : constant A0B.ARMv7M.External_Interrupt_Number := 9;
-   --  EXTI4_Interrupt     : constant A0B.ARMv7M.External_Interrupt_Number := 10;
-   --  EXTI9_5_Interrupt   : constant A0B.ARMv7M.External_Interrupt_Number := 23;
-   --  EXTI15_10_Interrupt : constant A0B.ARMv7M.External_Interrupt_Number := 40;
-   --
-   --  EXTI0_Mask     : constant := 2#0000_0000_0000_0001#;
-   --  EXTI1_Mask     : constant := 2#0000_0000_0000_0010#;
-   --  EXTI2_Mask     : constant := 2#0000_0000_0000_0100#;
-   --  EXTI3_Mask     : constant := 2#0000_0000_0000_1000#;
-   --  EXTI4_Mask     : constant := 2#0000_0000_0001_0000#;
-   --  EXTI9_5_Mask   : constant := 2#0000_0011_1110_0000#;
-   --  EXTI15_10_Mask : constant := 2#1111_1100_0000_0000#;
-   --
-   --  EXTI_Line : array (EXTI_Line_Identifier) of aliased EXTI_Descriptor;
+   type GPIO_Line_Access is access all GPIO_Line'Class;
 
-   --  procedure EXTI0_Handler
-   --    with Export, Convention => C, External_Name => "EXTI0_Handler";
-   --  procedure EXTI1_Handler
-   --    with Export, Convention => C, External_Name => "EXTI1_Handler";
-   --  procedure EXTI2_Handler
-   --    with Export, Convention => C, External_Name => "EXTI2_Handler";
-   --  procedure EXTI3_Handler
-   --    with Export, Convention => C, External_Name => "EXTI3_Handler";
-   --  procedure EXTI4_Handler
-   --    with Export, Convention => C, External_Name => "EXTI4_Handler";
-   --  procedure EXTI9_5_Handler
-   --    with Export, Convention => C, External_Name => "EXTI9_5_Handler";
-   --  procedure EXTI15_10_Handler
-   --    with Export, Convention => C, External_Name => "EXTI15_10_Handler";
-   --  --  EXTI* interrupt handlers
-   --
+   type EXTI_Descriptor is limited record
+      IO : GPIO_Line_Access;
+      SO : aliased Ada.Synchronous_Task_Control.Suspension_Object;
+      CB : A0B.Callbacks.Callback;
+   end record;
+
+   subtype EXTI_Line_Identifier is GPIO_Line_Identifier;
+
+   EXTI0_Mask     : constant := 2#0000_0000_0000_0001#;
+   EXTI1_Mask     : constant := 2#0000_0000_0000_0010#;
+   EXTI2_Mask     : constant := 2#0000_0000_0000_0100#;
+   EXTI3_Mask     : constant := 2#0000_0000_0000_1000#;
+   EXTI4_Mask     : constant := 2#0000_0000_0001_0000#;
+   EXTI9_5_Mask   : constant := 2#0000_0011_1110_0000#;
+   EXTI15_10_Mask : constant := 2#1111_1100_0000_0000#;
+
+   EXTI_Line : array (EXTI_Line_Identifier) of aliased EXTI_Descriptor;
+
+   procedure EXTI0_Handler
+     with Export, Convention => C, External_Name => "EXTI0_Handler";
+   procedure EXTI1_Handler
+     with Export, Convention => C, External_Name => "EXTI1_Handler";
+   procedure EXTI2_Handler
+     with Export, Convention => C, External_Name => "EXTI2_Handler";
+   procedure EXTI3_Handler
+     with Export, Convention => C, External_Name => "EXTI3_Handler";
+   procedure EXTI4_Handler
+     with Export, Convention => C, External_Name => "EXTI4_Handler";
+   procedure EXTI9_5_Handler
+     with Export, Convention => C, External_Name => "EXTI9_5_Handler";
+   procedure EXTI15_10_Handler
+     with Export, Convention => C, External_Name => "EXTI15_10_Handler";
+   --  EXTI* interrupt handlers
+
+   procedure EXTI_Handler (Pending_Mask : A0B.Types.Unsigned_32);
+
    --  procedure Enable_Clock (Self : in out GPIO_Controller);
    --  --  Enable clock of the given GPIO controller.
 
@@ -122,65 +115,70 @@ package body A0B.STM32H723.GPIO is
       raise Program_Error;
    end Configure_Alternative_Function;
 
-   --  --------------------
-   --  -- Configure_EXTI --
-   --  --------------------
-   --
-   --  procedure Configure_EXTI
-   --    (Self : aliased in out STM32_Pin'Class;
-   --     Mode : EXTI_Mode;
-   --     Pull : Pull_Mode := No) is
-   --  begin
-   --     pragma Assert
-   --       (EXTI_Line (Self.Line).IO = null
-   --          or EXTI_Line (Self.Line).IO = Self'Unchecked_Access);
-   --     EXTI_Line (Self.Line).IO := Self'Unchecked_Access;
-   --     --  Link EXTI line with GPIO line
-   --
-   --     Self.Configure_Input (Pull);
-   --     --  Configure IO line in input mode, it is required for EXTI, enable
-   --     --  pull-up/pull-down when requested.
-   --
-   --     RCC_Periph.APB4ENR.SYSCFGEN := True;
-   --     Data_Synchronization_Barrier;
-   --     --  Enable clock of the SYSCFG controller.
-   --
-   --     --  Select GPIO controller to be used to generate external interrupt.
-   --
-   --     case Self.Line is
-   --        when 0 .. 3 =>
-   --           SYSCFG_Periph.EXTICR1.EXTI.Arr (Integer (Self.Line)) :=
-   --             Self.Controller.Identifier;
-   --
-   --        when 4 .. 7 =>
-   --           SYSCFG_Periph.EXTICR2.EXTI.Arr (Integer (Self.Line)) :=
-   --             Self.Controller.Identifier;
-   --
-   --        when 8 .. 11 =>
-   --           SYSCFG_Periph.EXTICR3.EXTI.Arr (Integer (Self.Line)) :=
-   --             Self.Controller.Identifier;
-   --
-   --        when 12 .. 15 =>
-   --           SYSCFG_Periph.EXTICR4.EXTI.Arr (Integer (Self.Line)) :=
-   --             Self.Controller.Identifier;
-   --     end case;
-   --
-   --     --  Select which edge(s) generates interrupt.
-   --
-   --     case Mode is
-   --        when Both_Edge =>
-   --           EXTI_Periph.RTSR1.TR.Arr (Integer (Self.Line)) := True;
-   --           EXTI_Periph.FTSR1.TR.Arr (Integer (Self.Line)) := True;
-   --
-   --        when Rising_Edge =>
-   --           EXTI_Periph.RTSR1.TR.Arr (Integer (Self.Line)) := True;
-   --           EXTI_Periph.FTSR1.TR.Arr (Integer (Self.Line)) := False;
-   --
-   --        when Falling_Edge =>
-   --           EXTI_Periph.RTSR1.TR.Arr (Integer (Self.Line)) := False;
-   --           EXTI_Periph.FTSR1.TR.Arr (Integer (Self.Line)) := True;
-   --     end case;
-   --  end Configure_EXTI;
+   --------------------
+   -- Configure_EXTI --
+   --------------------
+
+   procedure Configure_EXTI
+     (Self : aliased in out GPIO_Line'Class;
+      Mode : EXTI_Mode;
+      Pull : Pull_Mode := No)
+   is
+      function To_AFRL_AFSEL_Element is
+        new Ada.Unchecked_Conversion
+              (GPIO_Controller_Identifier, AFRL_AFSEL_Element);
+
+   begin
+      pragma Assert
+        (EXTI_Line (Self.Identifier).IO = null
+           or EXTI_Line (Self.Identifier).IO = Self'Unchecked_Access);
+      EXTI_Line (Self.Identifier).IO := Self'Unchecked_Access;
+      --  Link EXTI line with GPIO line
+
+      Self.Configure_Input (Pull);
+      --  Configure IO line in input mode, it is required for EXTI, enable
+      --  pull-up/pull-down when requested.
+
+      --  RCC_Periph.APB4ENR.SYSCFGEN := True;
+      --  Data_Synchronization_Barrier;
+      --  Enable clock of the SYSCFG controller.
+
+      --  Select GPIO controller to be used to generate external interrupt.
+
+      case Self.Identifier is
+         when 0 .. 3 =>
+            SYSCFG_Periph.EXTICR1.EXTI.Arr (Integer (Self.Identifier)) :=
+              To_AFRL_AFSEL_Element (Self.Controller.Identifier);
+
+         when 4 .. 7 =>
+            SYSCFG_Periph.EXTICR2.EXTI.Arr (Integer (Self.Identifier)) :=
+              To_AFRL_AFSEL_Element (Self.Controller.Identifier);
+
+         when 8 .. 11 =>
+            SYSCFG_Periph.EXTICR3.EXTI.Arr (Integer (Self.Identifier)) :=
+              To_AFRL_AFSEL_Element (Self.Controller.Identifier);
+
+         when 12 .. 15 =>
+            SYSCFG_Periph.EXTICR4.EXTI.Arr (Integer (Self.Identifier)) :=
+              To_AFRL_AFSEL_Element (Self.Controller.Identifier);
+      end case;
+
+      --  Select which edge(s) generates interrupt.
+
+      case Mode is
+         when Both_Edge =>
+            EXTI_Periph.RTSR1.TR.Arr (Integer (Self.Identifier)) := True;
+            EXTI_Periph.FTSR1.TR.Arr (Integer (Self.Identifier)) := True;
+
+         when Rising_Edge =>
+            EXTI_Periph.RTSR1.TR.Arr (Integer (Self.Identifier)) := True;
+            EXTI_Periph.FTSR1.TR.Arr (Integer (Self.Identifier)) := False;
+
+         when Falling_Edge =>
+            EXTI_Periph.RTSR1.TR.Arr (Integer (Self.Identifier)) := False;
+            EXTI_Periph.FTSR1.TR.Arr (Integer (Self.Identifier)) := True;
+      end case;
+   end Configure_EXTI;
 
    ---------------------
    -- Configure_Input --
@@ -220,68 +218,68 @@ package body A0B.STM32H723.GPIO is
       --  General purpose output mode
    end Configure_Output;
 
-   --  -----------------------
-   --  -- Disable_Interrupt --
-   --  -----------------------
-   --
-   --  overriding procedure Disable_Interrupt (Self : in out STM32_Pin) is
-   --     use type A0B.Types.Unsigned_32;
-   --
-   --     Old_IMR : constant A0B.Types.Unsigned_32 := EXTI_Periph.CPUIMR1.Val;
-   --     Mask    : constant A0B.Types.Unsigned_32 :=
-   --       A0B.Types.Shift_Left (1, Integer (Self.Line));
-   --     New_IMR : constant A0B.Types.Unsigned_32 := Old_IMR and not Mask;
-   --
-   --  begin
-   --     --  Disable external interrupt
-   --
-   --     EXTI_Periph.CPUIMR1.Val := New_IMR;
-   --
-   --     --  Disable NVIC interrupt
-   --
-   --     if (Old_IMR and EXTI0_Mask) /= 0
-   --       and (New_IMR and EXTI0_Mask) = 0
-   --     then
-   --        NVIC.ICER (EXTI0_Interrupt) := True;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI1_Mask) /= 0
-   --       and (New_IMR and EXTI1_Mask) = 0
-   --     then
-   --        NVIC.ICER (EXTI1_Interrupt) := True;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI2_Mask) /= 0
-   --       and (New_IMR and EXTI2_Mask) = 0
-   --     then
-   --        NVIC.ICER (EXTI2_Interrupt) := True;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI3_Mask) /= 0
-   --       and (New_IMR and EXTI3_Mask) = 0
-   --     then
-   --        NVIC.ICER (EXTI3_Interrupt) := True;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI4_Mask) /= 0
-   --       and (New_IMR and EXTI4_Mask) = 0
-   --     then
-   --        NVIC.ICER (EXTI4_Interrupt) := True;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI9_5_Mask) /= 0
-   --       and (New_IMR and EXTI9_5_Mask) = 0
-   --     then
-   --        NVIC.ICER (EXTI9_5_Interrupt) := True;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI15_10_Mask) /= 0
-   --       and (New_IMR and EXTI15_10_Mask) = 0
-   --     then
-   --        NVIC.ICER (EXTI15_10_Interrupt) := True;
-   --     end if;
-   --  end Disable_Interrupt;
-   --
+   -----------------------
+   -- Disable_Interrupt --
+   -----------------------
+
+   overriding procedure Disable_Interrupt (Self : in out GPIO_Line) is
+      use type A0B.Types.Unsigned_32;
+
+      Old_IMR : constant A0B.Types.Unsigned_32 := EXTI_Periph.CPUIMR1.Val;
+      Mask    : constant A0B.Types.Unsigned_32 :=
+        A0B.Types.Shift_Left (1, Integer (Self.Identifier));
+      New_IMR : constant A0B.Types.Unsigned_32 := Old_IMR and not Mask;
+
+   begin
+      --  Disable external interrupt
+
+      EXTI_Periph.CPUIMR1.Val := New_IMR;
+
+      --  Disable NVIC interrupt
+
+      if (Old_IMR and EXTI0_Mask) /= 0
+        and (New_IMR and EXTI0_Mask) = 0
+      then
+         Disable_Interrupt (EXTI0);
+      end if;
+
+      if (Old_IMR and EXTI1_Mask) /= 0
+        and (New_IMR and EXTI1_Mask) = 0
+      then
+         Disable_Interrupt (EXTI1);
+      end if;
+
+      if (Old_IMR and EXTI2_Mask) /= 0
+        and (New_IMR and EXTI2_Mask) = 0
+      then
+         Disable_Interrupt (EXTI2);
+      end if;
+
+      if (Old_IMR and EXTI3_Mask) /= 0
+        and (New_IMR and EXTI3_Mask) = 0
+      then
+         Disable_Interrupt (EXTI3);
+      end if;
+
+      if (Old_IMR and EXTI4_Mask) /= 0
+        and (New_IMR and EXTI4_Mask) = 0
+      then
+         Disable_Interrupt (EXTI4);
+      end if;
+
+      if (Old_IMR and EXTI9_5_Mask) /= 0
+        and (New_IMR and EXTI9_5_Mask) = 0
+      then
+         Disable_Interrupt (EXTI9_5);
+      end if;
+
+      if (Old_IMR and EXTI15_10_Mask) /= 0
+        and (New_IMR and EXTI15_10_Mask) = 0
+      then
+         Disable_Interrupt (EXTI15_10);
+      end if;
+   end Disable_Interrupt;
+
    --  ------------------
    --  -- Enable_Clock --
    --  ------------------
@@ -325,181 +323,167 @@ package body A0B.STM32H723.GPIO is
    --
    --     Data_Synchronization_Barrier;
    --  end Enable_Clock;
-   --
-   --  ----------------------
-   --  -- Enable_Interrupt --
-   --  ----------------------
-   --
-   --  overriding procedure Enable_Interrupt (Self : in out STM32_Pin) is
-   --     use type A0B.Types.Unsigned_32;
-   --
-   --     Old_IMR : constant A0B.Types.Unsigned_32 := EXTI_Periph.CPUIMR1.Val;
-   --     Mask    : constant A0B.Types.Unsigned_32 :=
-   --       A0B.Types.Shift_Left (1, Integer (Self.Line));
-   --     New_IMR : constant A0B.Types.Unsigned_32 := Old_IMR or Mask;
-   --
-   --  begin
-   --     --  Clear pending status and enable external interrupt
-   --
-   --     EXTI_Periph.CPUPR1.PR.Val := A0B.Types.Unsigned_22 (Mask);
-   --     EXTI_Periph.CPUIMR1.Val   := New_IMR;
-   --
-   --     --  Enable NVIC interrupt
-   --
-   --     if (Old_IMR and EXTI0_Mask) = 0
-   --       and (New_IMR and EXTI0_Mask) /= 0
-   --     then
-   --        NVIC.ICPR (EXTI0_Interrupt) := True;
-   --        NVIC.ISER (EXTI0_Interrupt) := True;
-   --        --  NVIC.IPR (EXTI0_Interrupt) := bla...;
-   --        --  XXX How to get priority without depend      null;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI1_Mask) = 0
-   --       and (New_IMR and EXTI1_Mask) /= 0
-   --     then
-   --        NVIC.ICPR (EXTI1_Interrupt) := True;
-   --        NVIC.ISER (EXTI1_Interrupt) := True;
-   --        --  NVIC.IPR (EXTI1_Interrupt) := bla...;
-   --        --  XXX How to get priority without depend      null;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI2_Mask) = 0
-   --       and (New_IMR and EXTI2_Mask) /= 0
-   --     then
-   --        NVIC.ICPR (EXTI2_Interrupt) := True;
-   --        NVIC.ISER (EXTI2_Interrupt) := True;
-   --        --  NVIC.IPR (EXTI2_Interrupt) := bla...;
-   --        --  XXX How to get priority without depend      null;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI3_Mask) = 0
-   --       and (New_IMR and EXTI3_Mask) /= 0
-   --     then
-   --        NVIC.ICPR (EXTI3_Interrupt) := True;
-   --        NVIC.ISER (EXTI3_Interrupt) := True;
-   --        --  NVIC.IPR (EXTI3_Interrupt) := bla...;
-   --        --  XXX How to get priority without depend      null;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI4_Mask) = 0
-   --       and (New_IMR and EXTI4_Mask) /= 0
-   --     then
-   --        NVIC.ICPR (EXTI4_Interrupt) := True;
-   --        NVIC.ISER (EXTI4_Interrupt) := True;
-   --        --  NVIC.IPR (EXTI4_Interrupt) := bla...;
-   --        --  XXX How to get priority without depend      null;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI9_5_Mask) = 0
-   --       and (New_IMR and EXTI9_5_Mask) /= 0
-   --     then
-   --        NVIC.ICPR (EXTI9_5_Interrupt) := True;
-   --        NVIC.ISER (EXTI9_5_Interrupt) := True;
-   --        --  NVIC.IPR (EXTI9_5_Interrupt) := bla...;
-   --        --  XXX How to get priority without depend      null;
-   --     end if;
-   --
-   --     if (Old_IMR and EXTI15_10_Mask) = 0
-   --       and (New_IMR and EXTI15_10_Mask) /= 0
-   --     then
-   --        NVIC.ICPR (EXTI15_10_Interrupt) := True;
-   --        NVIC.ISER (EXTI15_10_Interrupt) := True;
-   --        --  NVIC.IPR (EXTI15_10_Interrupt) := bla...;
-   --        --  XXX How to get priority without depend      null;
-   --     end if;
-   --  end Enable_Interrupt;
-   --
-   --  ------------------
-   --  -- EXTI_Handler --
-   --  ------------------
-   --
-   --  procedure EXTI_Handler (Pending_Mask : A0B.Types.Unsigned_32) is
-   --     use type A0B.Types.Unsigned_32;
-   --
-   --     Status : A0B.Types.Unsigned_32 :=
-   --       A0B.Types.Unsigned_32 (EXTI_Periph.CPUPR1.PR.Val)
-   --         and Pending_Mask;
-   --     Line   : Integer;
-   --     Mask   : A0B.Types.Unsigned_32;
-   --
-   --  begin
-   --     while Status /= 0 loop
-   --        Line   := Integer (ctz (Status));
-   --        Mask   := A0B.Types.Shift_Left (1, Line);
-   --        Status := @ and (not Mask);
-   --
-   --        EXTI_Periph.CPUPR1.PR.Arr (Line) := True;
-   --        --  Clear interrupt pending bit, it should be done by software.
-   --
-   --        Ada.Synchronous_Task_Control.Set_True
-   --          (EXTI_Line (EXTI_Line_Identifier (Line)).SO);
-   --        A0B.Callbacks.Emit (EXTI_Line (EXTI_Line_Identifier (Line)).CB);
-   --     end loop;
-   --  end EXTI_Handler;
-   --
-   --  -------------------
-   --  -- EXTI0_Handler --
-   --  -------------------
-   --
-   --  procedure EXTI0_Handler is
-   --  begin
-   --     EXTI_Handler (EXTI0_Mask);
-   --  end EXTI0_Handler;
-   --
-   --  -------------------
-   --  -- EXTI1_Handler --
-   --  -------------------
-   --
-   --  procedure EXTI1_Handler is
-   --  begin
-   --     EXTI_Handler (EXTI1_Mask);
-   --  end EXTI1_Handler;
-   --
-   --  -----------------------
-   --  -- EXTI15_10_Handler --
-   --  -----------------------
-   --
-   --  procedure EXTI15_10_Handler is
-   --  begin
-   --     EXTI_Handler (EXTI15_10_Mask);
-   --  end EXTI15_10_Handler;
-   --
-   --  -------------------
-   --  -- EXTI2_Handler --
-   --  -------------------
-   --
-   --  procedure EXTI2_Handler is
-   --  begin
-   --     EXTI_Handler (EXTI2_Mask);
-   --  end EXTI2_Handler;
-   --
-   --  -------------------
-   --  -- EXTI3_Handler --
-   --  -------------------
-   --
-   --  procedure EXTI3_Handler is
-   --  begin
-   --     EXTI_Handler (EXTI3_Mask);
-   --  end EXTI3_Handler;
-   --
-   --  -------------------
-   --  -- EXTI4_Handler --
-   --  -------------------
-   --
-   --  procedure EXTI4_Handler is
-   --  begin
-   --     EXTI_Handler (EXTI4_Mask);
-   --  end EXTI4_Handler;
-   --
-   --  ---------------------
-   --  -- EXTI9_5_Handler --
-   --  ---------------------
-   --
-   --  procedure EXTI9_5_Handler is
-   --  begin
-   --     EXTI_Handler (EXTI9_5_Mask);
-   --  end EXTI9_5_Handler;
+
+   ----------------------
+   -- Enable_Interrupt --
+   ----------------------
+
+   overriding procedure Enable_Interrupt (Self : in out GPIO_Line) is
+      use type A0B.Types.Unsigned_32;
+
+      Old_IMR : constant A0B.Types.Unsigned_32 := EXTI_Periph.CPUIMR1.Val;
+      Mask    : constant A0B.Types.Unsigned_32 :=
+        A0B.Types.Shift_Left (1, Integer (Self.Identifier));
+      New_IMR : constant A0B.Types.Unsigned_32 := Old_IMR or Mask;
+
+   begin
+      --  Clear pending status and enable external interrupt
+
+      EXTI_Periph.CPUPR1.PR.Val := A0B.Types.Unsigned_22 (Mask);
+      EXTI_Periph.CPUIMR1.Val   := New_IMR;
+
+      --  Enable NVIC interrupt
+
+      if (Old_IMR and EXTI0_Mask) = 0
+        and (New_IMR and EXTI0_Mask) /= 0
+      then
+         Clear_Pending (EXTI0);
+         Enable_Interrupt (EXTI0);
+      end if;
+
+      if (Old_IMR and EXTI1_Mask) = 0
+        and (New_IMR and EXTI1_Mask) /= 0
+      then
+         Clear_Pending (EXTI1);
+         Enable_Interrupt (EXTI1);
+      end if;
+
+      if (Old_IMR and EXTI2_Mask) = 0
+        and (New_IMR and EXTI2_Mask) /= 0
+      then
+         Clear_Pending (EXTI2);
+         Enable_Interrupt (EXTI2);
+      end if;
+
+      if (Old_IMR and EXTI3_Mask) = 0
+        and (New_IMR and EXTI3_Mask) /= 0
+      then
+         Clear_Pending (EXTI3);
+         Enable_Interrupt (EXTI3);
+      end if;
+
+      if (Old_IMR and EXTI4_Mask) = 0
+        and (New_IMR and EXTI4_Mask) /= 0
+      then
+         Clear_Pending (EXTI4);
+         Enable_Interrupt (EXTI4);
+      end if;
+
+      if (Old_IMR and EXTI9_5_Mask) = 0
+        and (New_IMR and EXTI9_5_Mask) /= 0
+      then
+         Clear_Pending (EXTI9_5);
+         Enable_Interrupt (EXTI9_5);
+      end if;
+
+      if (Old_IMR and EXTI15_10_Mask) = 0
+        and (New_IMR and EXTI15_10_Mask) /= 0
+      then
+         Clear_Pending (EXTI15_10);
+         Enable_Interrupt (EXTI15_10);
+      end if;
+   end Enable_Interrupt;
+
+   -------------------
+   -- EXTI0_Handler --
+   -------------------
+
+   procedure EXTI0_Handler is
+   begin
+      EXTI_Handler (EXTI0_Mask);
+   end EXTI0_Handler;
+
+   -----------------------
+   -- EXTI15_10_Handler --
+   -----------------------
+
+   procedure EXTI15_10_Handler is
+   begin
+      EXTI_Handler (EXTI15_10_Mask);
+   end EXTI15_10_Handler;
+
+   -------------------
+   -- EXTI1_Handler --
+   -------------------
+
+   procedure EXTI1_Handler is
+   begin
+      EXTI_Handler (EXTI1_Mask);
+   end EXTI1_Handler;
+
+   -------------------
+   -- EXTI2_Handler --
+   -------------------
+
+   procedure EXTI2_Handler is
+   begin
+      EXTI_Handler (EXTI2_Mask);
+   end EXTI2_Handler;
+
+   -------------------
+   -- EXTI3_Handler --
+   -------------------
+
+   procedure EXTI3_Handler is
+   begin
+      EXTI_Handler (EXTI3_Mask);
+   end EXTI3_Handler;
+
+   -------------------
+   -- EXTI4_Handler --
+   -------------------
+
+   procedure EXTI4_Handler is
+   begin
+      EXTI_Handler (EXTI4_Mask);
+   end EXTI4_Handler;
+
+   ---------------------
+   -- EXTI9_5_Handler --
+   ---------------------
+
+   procedure EXTI9_5_Handler is
+   begin
+      EXTI_Handler (EXTI9_5_Mask);
+   end EXTI9_5_Handler;
+
+   ------------------
+   -- EXTI_Handler --
+   ------------------
+
+   procedure EXTI_Handler (Pending_Mask : A0B.Types.Unsigned_32) is
+      use type A0B.Types.Unsigned_32;
+
+      Status : A0B.Types.Unsigned_32 :=
+        A0B.Types.Unsigned_32 (EXTI_Periph.CPUPR1.PR.Val)
+          and Pending_Mask;
+      Line   : Integer;
+      Mask   : A0B.Types.Unsigned_32;
+
+   begin
+      while Status /= 0 loop
+         Line   := Integer (ctz (Status));
+         Mask   := A0B.Types.Shift_Left (1, Line);
+         Status := @ and (not Mask);
+
+         EXTI_Periph.CPUPR1.PR.Arr (Line) := True;
+         --  Clear interrupt pending bit, it should be done by software.
+
+         Ada.Synchronous_Task_Control.Set_True
+           (EXTI_Line (EXTI_Line_Identifier (Line)).SO);
+         A0B.Callbacks.Emit (EXTI_Line (EXTI_Line_Identifier (Line)).CB);
+      end loop;
+   end EXTI_Handler;
 
    ---------
    -- Get --
@@ -530,30 +514,17 @@ package body A0B.STM32H723.GPIO is
       Self.Controller.Peripheral.BSRR := Aux;
    end Set;
 
-   --  ------------------
-   --  -- Set_Callback --
-   --  ------------------
-   --
-   --  overriding procedure Set_Callback
-   --    (Self : in out STM32_Pin; Callback : A0B.Callbacks.Callback) is
-   --  begin
-   --     pragma Assert (EXTI_Line (Self.Line).IO = Self'Unchecked_Access);
-   --
-   --     EXTI_Line (Self.Line).CB := Callback;
-   --  end Set_Callback;
-   --
-   --  -----------------------
-   --  -- Suspension_Object --
-   --  -----------------------
-   --
-   --  overriding function Suspension_Object
-   --    (Self : aliased in out STM32_Pin)
-   --     return not null access Ada.Synchronous_Task_Control.Suspension_Object is
-   --  begin
-   --     pragma Assert (EXTI_Line (Self.Line).IO = Self'Unchecked_Access);
-   --
-   --     return EXTI_Line (Self.Line).SO'Access;
-   --  end Suspension_Object;
+   ------------------
+   -- Set_Callback --
+   ------------------
+
+   overriding procedure Set_Callback
+     (Self : in out GPIO_Line; Callback : A0B.Callbacks.Callback) is
+   begin
+      pragma Assert (EXTI_Line (Self.Identifier).IO = Self'Unchecked_Access);
+
+      EXTI_Line (Self.Identifier).CB := Callback;
+   end Set_Callback;
 
    ---------------------
    -- Set_Output_Mode --
@@ -623,5 +594,18 @@ package body A0B.STM32H723.GPIO is
               (Integer (Self.Identifier)) := 2#10#;
       end case;
    end Set_Pull_Mode;
+
+   -----------------------
+   -- Suspension_Object --
+   -----------------------
+
+   overriding function Suspension_Object
+     (Self : aliased in out GPIO_Line)
+      return not null access Ada.Synchronous_Task_Control.Suspension_Object is
+   begin
+      pragma Assert (EXTI_Line (Self.Identifier).IO = Self'Unchecked_Access);
+
+      return EXTI_Line (Self.Identifier).SO'Access;
+   end Suspension_Object;
 
 end A0B.STM32H723.GPIO;
