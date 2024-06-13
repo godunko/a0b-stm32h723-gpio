@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2024, Vadim Godunko <vgodunko@gmail.com>
+--
+--  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+--
 
 --  pragma Restrictions (No_Elaboration_Code);
 
@@ -8,7 +13,7 @@
 --  with A0B.EXTI;
 with A0B.GPIO;
 with A0B.STM32H723.SVD.GPIO;
---  with A0B.Types;
+private with A0B.Types;
 
 package A0B.STM32H723.GPIO
   with Preelaborate
@@ -268,5 +273,23 @@ is
   --
   --   PH0  : aliased GPIO_Line (Controller => GPIOH'Access, Identifier => 0);
   --   PH1  : aliased GPIO_Line (Controller => GPIOH'Access, Identifier => 1);
+
+private
+
+   subtype GPIO_Alternative_Function is A0B.Types.Unsigned_4;
+
+   type Line_Descriptor (Supported : Boolean := False) is record
+      case Supported is
+         when False =>
+            null;
+
+         when True =>
+            Controller           : GPIO_Controller_Identifier;
+            Line                 : GPIO_Line_Identifier;
+            Alternative_Function : GPIO_Alternative_Function;
+      end case;
+   end record with Pack;
+
+   type Line_Descriptor_Array is array (0 .. 3) of Line_Descriptor with Pack;
 
 end A0B.STM32H723.GPIO;
