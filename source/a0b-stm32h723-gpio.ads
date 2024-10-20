@@ -6,8 +6,6 @@
 
 --  pragma Restrictions (No_Elaboration_Code);
 
-with Ada.Synchronous_Task_Control;
-
 with A0B.Callbacks;
 with A0B.EXTI;
 with A0B.GPIO;
@@ -66,10 +64,6 @@ is
    overriding procedure Enable_Interrupt (Self : in out GPIO_Line);
 
    overriding procedure Disable_Interrupt (Self : in out GPIO_Line);
-
-   overriding function Suspension_Object
-     (Self : aliased in out GPIO_Line)
-      return not null access Ada.Synchronous_Task_Control.Suspension_Object;
 
    overriding procedure Set_Callback
      (Self : in out GPIO_Line; Callback : A0B.Callbacks.Callback);

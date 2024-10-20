@@ -23,7 +23,6 @@ package body A0B.STM32H723.GPIO is
 
    type EXTI_Descriptor is limited record
       IO : GPIO_Line_Access;
-      SO : aliased Ada.Synchronous_Task_Control.Suspension_Object;
       CB : A0B.Callbacks.Callback;
    end record;
 
@@ -479,8 +478,6 @@ package body A0B.STM32H723.GPIO is
          EXTI_Periph.CPUPR1.PR.Arr (Line) := True;
          --  Clear interrupt pending bit, it should be done by software.
 
-         Ada.Synchronous_Task_Control.Set_True
-           (EXTI_Line (EXTI_Line_Identifier (Line)).SO);
          A0B.Callbacks.Emit (EXTI_Line (EXTI_Line_Identifier (Line)).CB);
       end loop;
    end EXTI_Handler;
@@ -594,18 +591,5 @@ package body A0B.STM32H723.GPIO is
               (Integer (Self.Identifier)) := 2#10#;
       end case;
    end Set_Pull_Mode;
-
-   -----------------------
-   -- Suspension_Object --
-   -----------------------
-
-   overriding function Suspension_Object
-     (Self : aliased in out GPIO_Line)
-      return not null access Ada.Synchronous_Task_Control.Suspension_Object is
-   begin
-      pragma Assert (EXTI_Line (Self.Identifier).IO = Self'Unchecked_Access);
-
-      return EXTI_Line (Self.Identifier).SO'Access;
-   end Suspension_Object;
 
 end A0B.STM32H723.GPIO;
